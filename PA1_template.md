@@ -19,7 +19,8 @@ The data consists of 3 columns of data as described below.
 
 The first step is to read in the data and make it clean and tidy.  The time is padded with leading zeros to make the time column consistent with 4 digit miltary time.  The str_pad() function takes care of this.  The date was then converted into a standard date format.
 
-```{r read and tidy}
+
+```r
 library(stringr)
 setwd("C:/Users/Renee/Documents/Coursera/GitRepos/ReproducibleResearch/RepData_PeerAssessment1")
 classes <- c("numeric", "character", "character")
@@ -32,7 +33,8 @@ The first question:  **What is the mean total of steps taken per day?** (Ignorin
 
 The data are grouped by date and summarized in dplyr to find the mean total of steps taken per day.  The data are plotted in a histogram showing number of days that fall under different ranges of step counts.
 
-```{r mean steps}
+
+```r
 library(dplyr)
 activity_tbl <- tbl_df(activity_data)
 activity_groupby_date <- group_by(activity_tbl, date)
@@ -47,7 +49,9 @@ hist(activity_dailysteps$steps, main = paste("Histogram of Steps Taken per Day (
              ylim = c(0, 30), xlab = "Step Count", labels = TRUE)
 ```
 
-####The mean number of steps taken per day is `r mean_steps` and the median is `r median_steps`.
+![plot of chunk mean steps](figure/mean steps-1.png) 
+
+####The mean number of steps taken per day is 10766 and the median is 10765.
 _____
 
 
@@ -55,7 +59,8 @@ The second question:  **What is the average daily activity pattern?** (Ignoring 
 
 The data are grouped by time interval and summarized in dplyr to find the average number of steps per interval over the two month period.  The mean number of steps is plotted versus the 5 minute time period.  Please note that the time is read as military time, for example, 0520 is 5:20 a.m. and 2105 is 9:05 p.m.
 
-```{r daily activity pattern}
+
+```r
 activity_groupby_int <- group_by(activity_tbl, interval)
 activity_intsteps <- summarize(activity_groupby_int, mean_int_steps = mean(steps, na.rm = TRUE))
 
@@ -73,7 +78,9 @@ with(activity_intsteps, plot(interval, mean_int_steps, type = "l",
                 sub = "Data Collected Oct-Nov 2012"))
 ```
 
-####The maximum step count occurs at the interval starting at `r max_time` with a value of `r max_steps` steps.
+![plot of chunk daily activity pattern](figure/daily activity pattern-1.png) 
+
+####The maximum step count occurs at the interval starting at 0835 with a value of 206 steps.
 _____
 
 
@@ -85,17 +92,19 @@ The third question:  **What is the impact of missing values?**
 - Create a new dataset that is equal to the original dataset but with the missing data filled in.
 - Make a histogram of the total number of steps taken each day and calculate and report the mean and median total number of steps taken per day.  Do these values differ from the estimates from the first part of the assignment?  What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r determine # of rows with missing values}
+
+```r
 n <- nrow(activity_data)
 complete <- complete.cases(activity_data)
 missing_data <- sum(!complete)
 ```
 
-####There are `r missing_data` missing values out of a total of `r n`.
+####There are 2304 missing values out of a total of 17568.
 
 In the code below, the missing values are replaced with the values from the daily activity pattern.  For example, if the time interval of 1025 is missing it is replaced with the average step count for 1025.
 
-```{r replace missing values with daily activity pattern}
+
+```r
 activity_new <- activity_tbl
 for(i in 1:n) {
                 if(complete[i] == FALSE){
@@ -107,7 +116,8 @@ for(i in 1:n) {
 
 The next chunk of code plots a histogram and finds the mean and median of the new data set.
 
-```{r plot new histogram}
+
+```r
 activity_groupby_date <- group_by(activity_new, date)
 activity_dailysteps <- summarize(activity_groupby_date, steps = sum(steps))
 
@@ -120,7 +130,9 @@ hist(activity_dailysteps$steps, main = paste("Histogram of Steps Taken per Day (
              ylim = c(0,40), xlab = "Step Count", labels = TRUE, sub = "NA values replaced")
 ```
 
-####The mean number of steps taken per day is `r mean_steps2` and the median is `r median_steps2` when the NA values are replaced with average daily activity values.
+![plot of chunk plot new histogram](figure/plot new histogram-1.png) 
+
+####The mean number of steps taken per day is 10766 and the median is 10766 when the NA values are replaced with average daily activity values.
 
 Replacing the missing values with mean step data had minimal impact on the mean and median for this data set.  The histogram frequency for 10000 to 15000 steps per day increased from 28 to 36.  In this data set, missing data were found to occur for an entire day at a time; therefore, replacing the missing data with mean data just added to the number of days falling under the mean step count bar of the histogram.  Under these circumstances, one would expect the mean and median would remain unchanged.  If the data were missing over random parts of days, one could have seen a more significant change in the mean and median.
 
@@ -131,7 +143,8 @@ The fourth question:  **Are there differences in activity patterns between weekd
 - Using the dataset with filled-in missing values, create a new factor variable in the dataset with two levels - "weekday" and "weekend" - indicating whether a given data is a weekday or weekend day.
 - Make a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days and weekend days(y-axis).
 
-```{r Add column indicating weekend or weekday}
+
+```r
 library(ggplot2)
 activity_new <- mutate(activity_new, days = weekdays(date))
 
@@ -148,8 +161,8 @@ for(i in 1:n) {
 
 Make panel plot (step count vs. time interval) comparing weekday activity with weekend activity.
 
-```{r make time series plots comparing weekday and weekend activity levels}
 
+```r
 activity_by_int_days <- group_by(activity_new, days, interval)
 activity_weekdays <- summarize(activity_by_int_days, mean_int_steps = mean(steps))
 
@@ -162,11 +175,13 @@ g + geom_line(color = "darkblue", size = .5) +
         scale_x_discrete(breaks = c("0500","1000","1500","2000"))
 ```
 
+![plot of chunk make time series plots comparing weekday and weekend activity levels](figure/make time series plots comparing weekday and weekend activity levels-1.png) 
+
 The plots show that the subject tends to start moving a bit earlier on weekdays and has a higher maximum interval step count around 0830 which is well above 200 steps.  On weekends the maximum interval step count is about 160, but the subject tends to have more activity throughout the day and later into the evening.  One last analysis will be performed to check on average step counts on weekdays versus weekends.
 
 
-```{r mean steps per day - weekday vs weekend}
 
+```r
 activity_by_date_days <- group_by(activity_new, days, date)
 activity_stepsperday <- summarize(activity_by_date_days, steps = sum(steps))
 mean_weekdaysteps <- summarize(activity_stepsperday, mean(steps))
@@ -177,4 +192,4 @@ max_steps1 <- as.integer(max_steps1)
 max_steps2 <- as.integer(max_steps2)
 ```
 
-####The mean steps per `r mean_weekdaysteps[1,1]` was `r max_steps1` steps while the mean steps per `r mean_weekdaysteps[2,1]` day was `r max_steps2` steps.
+####The mean steps per Weekday was 10255 steps while the mean steps per Weekend day was 12201 steps.
